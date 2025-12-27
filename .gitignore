@@ -3,3 +3,7 @@ pyvenv.cfg
 .pypirc
 dist/
 puffcoble.egg-info/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc

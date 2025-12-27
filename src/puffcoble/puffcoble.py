@@ -368,6 +368,9 @@ class PuffcoBLE:
     async def get_current_profile_temp(self) -> int:
         temp_c = await self.read("/p/app/thc/temp", 0, 4, "float32")
         return int(round(temp_c * 9 / 5 + 32, 0))
+    
+    async def get_current_profile_index(self) -> int:
+        return int(await self.read("/p/app/hcs", 0, 1, "int8"))
 
     async def get_current_profile_duration(self) -> int:
         return int(await self.read("/p/app/thc/time", 0, 4, "float32"))
