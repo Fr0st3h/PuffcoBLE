@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "puffcoble"
+version = "0.1.0"
+description = "Python BLE SDK for Puffco Peak Pro devices"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+
+authors = [
+  { name = "Fr0st3h", email = "owner@hexogen.app" }
+]
+
+dependencies = [
+  "bleak==0.22.3",
+  "bleak-winrt==1.2.0",
+  "cbor2==5.7.1",
+  "tamga==1.4.0",
+  "typing-extensions==4.15.0",
+]
+
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+
+[tool.setuptools.package-data]
+puffcoble = ["py.typed"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
