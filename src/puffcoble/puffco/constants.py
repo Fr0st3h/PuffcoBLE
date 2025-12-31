@@ -106,3 +106,36 @@ class ChamberType(IntEnum):
     CLASSIC = 1
     XL = 2
     THREE_D = 3
+
+class AnimationCode(IntEnum):
+    PRESERVE = 0
+    ALL_ON = 1
+    ALL_OFF = 2
+    BONDING_SUCCESSFUL = 3
+    CONNECT_SUCCESSFUL = 4
+    BREATHING = 5
+    RISING = 6
+    CIRCLING = 7
+    HEAT_CYCLE_ACTIVE = 8
+    TEMP_SELECT = 9
+    CHARGE_START = 10
+    CHARGING = 11
+    CHARGING_LOW = 12
+    IDLE_WAKEUP = 13
+    IDLE_TO_OFF = 14
+    HEAT_CYCLE_FADE = 15
+    STEALTH_ENGAGE = 16
+    STEALTH_DISENGAGE = 17
+    LOGO_ONLY = 18
+    FACTORY_RESET = 19
+    BONDING = 20
+    USER0 = 240
+    USER1 = 241
+    USER2 = 242
+    USER3 = 243
+    USER0_TO_1 = 244
+    USER2_TO_3 = 245
+    USER0_TO_3 = 246
+    USER4 = 247
+    USER5 = 248
+    USER4_TO_5 = 249

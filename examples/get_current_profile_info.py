@@ -8,11 +8,11 @@ async def main():
     device = PuffcoBLE(device_name='DEV PUFFCO', debug=True)
     await device.connect()
     
-    profileName = await device.get_current_profile_name()
-    profileTemp = await device.get_current_profile_temp()
-    profileDuration = await device.get_current_profile_duration()
-    profileIndex = await device.get_current_profile_index()
-    print(f"Connected to {device.device_name}, Profile Index: {profileIndex} Profile Name: {profileName}, Profile Temperature: {profileTemp}, Profile Duration: {profileDuration}")
-
+    profileName = await device.get_profile_name()
+    profileTemp = await device.get_profile_temp()
+    profileDuration = await device.get_profile_time()
+    profileIndex = await device.get_current_profile()
+    chamberType = await device.get_chamber_type()
+    print(f"Connected to {device.device_name}\nProfile Index: {profileIndex}\nProfile Name: {profileName}\nProfile Temperature: {profileTemp}\nProfile Duration: {profileDuration}\nChamber Type: {chamberType.name}")
 
 asyncio.run(main())

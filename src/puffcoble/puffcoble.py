@@ -7,14 +7,14 @@ import sys
 from base64 import b64decode
 from hashlib import sha256
 from sys import platform
-from typing import Any, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 import cbor2
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
 from tamga import Tamga
 
-from puffcoble.puffco.constants import LoraxOpCodes, LoraxService, UnlockKeys, BatteryChargeState, ModeCommands, OperatingState
+from puffcoble.puffco.constants import LoraxOpCodes, LoraxService, UnlockKeys, BatteryChargeState, ModeCommands, OperatingState, ChamberType
 from puffcoble.utils.codec import hexify
 from puffcoble.utils.product_info import get_product_info
 from puffcoble.utils.rgbtApi2 import decode_puffco_json
@@ -353,35 +353,20 @@ class PuffcoBLE:
 
     async def get_uptime(self) -> list[int]:
         return list(await self.read_short("/p/sys/uptm", 0, 125))
+    
+    async def get_chamber_type(self) -> ChamberType:
+        data = await self.read_short("/p/htr/chmt", 0, 1)
+        return ChamberType(int(data[0]))
 
-    async def get_battery_charge_state(self) -> dict[str, Union[int, str]]:
-        data = await self.read_short("/p/bat/chg/stat", 0, 125)
-        state = BatteryChargeState(data[0])
-        return {"value": state.value, "name": state.name}
+    async def get_battery_charge_state(self) -> BatteryChargeState:
+        data = await self.read_short("/p/bat/chg/stat", 0, 1)
+        return BatteryChargeState(int(data[0]))
 
     async def get_battery_level(self) -> int:
         return int(await self.read("/p/bat/cap", 0, 4, "float32"))
 
-    async def get_current_profile_name(self) -> str:
-        return await self._read_and_decode("/p/app/thc/name")
-
-    async def get_current_profile_temp(self) -> int:
-        temp_c = await self.read("/p/app/thc/temp", 0, 4, "float32")
-        return int(round(temp_c * 9 / 5 + 32, 0))
-    
-    async def get_current_profile_index(self) -> int:
-        return int(await self.read("/p/app/hcs", 0, 1, "int8"))
-
-    async def get_current_profile_duration(self) -> int:
-        return int(await self.read("/p/app/thc/time", 0, 4, "float32"))
-
-    async def get_current_profile_colour(self) -> Any:
-        raw = await self.read_bytes_all("/p/app/thc/colr")
-        decoded = cbor2.loads(raw)
-        return decode_puffco_json(decoded)
-
     async def get_operating_state(self) -> OperatingState:
-        data = await self.read_short("/p/app/stat/id", 0, 125)
+        data = await self.read_short("/p/app/stat/id", 0, 1)
         return OperatingState(data[0])
 
     async def get_approx_dabs_remaining(self) -> int:
@@ -436,3 +421,61 @@ class PuffcoBLE:
 
     async def power_off(self) -> None:
         await self.send_mode_command(ModeCommands.MASTER_OFF)
+
+    async def factory_reset(self) -> None:
+        await self.write_short("/p/app/facr", 0, 0, bytes([1]))
+
+    async def is_stealth_mode(self) -> bool:
+        stealth = await self.read(f"/u/app/ui/stlm", 0, 4, data_type='uint8')
+        return int(stealth) == 1
+    
+    async def set_stealth_mode(self, enable: bool) -> None:
+        await self.write_short("/u/app/ui/stlm", 0, 0, bytes([int(enable)]))
+
+    #Profiles
+
+    async def get_current_profile(self) -> int:
+        return int(await self.read("/p/app/hcs", 0, 1, "int8"))
+
+    async def set_current_profile(self, index: int) -> None:
+        await self.write_short("/p/app/hcs", 0, 0, bytes([index]))
+
+    async def get_current_profile_colour(self) -> Any:
+        raw = await self.read_bytes_all("/p/app/thc/colr")
+        decoded = cbor2.loads(raw)
+        return decode_puffco_json(decoded)
+    
+    async def get_profile_colours(self, index: Optional[int] = None) -> Any:
+        if index is None:
+            raw = await self.read_bytes_all("/p/app/thc/colr")
+            decoded = cbor2.loads(raw)
+            return decode_puffco_json(decoded)
+        else:
+            raw = await self.read_bytes_all(f"/u/app/hc/{index}/colr")
+            decoded = cbor2.loads(raw)
+            return decode_puffco_json(decoded)
+        
+    async def set_profile_colour(self, index: Optional[int] = None, *, colour: dict) -> None:
+        if index is None:
+            profile = await self.get_current_profile()
+            await self.write_cbor_full(f"/u/app/hc/{profile}/colr", colour)
+        else:
+            await self.write_cbor_full(f"/u/app/hc/{index}/colr", colour)
+
+    async def get_profile_name(self, index: Optional[int] = None) -> str:
+        if index is None:
+            return await self._read_and_decode("/p/app/thc/name")
+        else:
+            return await self._read_and_decode(f"/u/app/hc/{index}/name")
+
+    async def get_profile_temp(self, index: Optional[int] = None) -> int:
+        if index is None:
+            return int(round((float(await self.read("/p/app/thc/temp", 0, data_type='float32')) * 1.8) + 32))
+        else:
+            return int(round((float(await self.read(f"/u/app/hc/{index}/temp", 0, data_type='float32')) * 1.8) + 32))
+        
+    async def get_profile_time(self, index: Optional[int] = None) -> int:
+        if index is None:
+            return int(round((float(await self.read("/p/app/thc/time", 0, data_type='float32')))))
+        else:
+            return int(await self.read(f"/u/app/hc/{index}/time", 0, data_type='float32'))

@@ -1,5 +1,5 @@
 from puffcoble import PuffcoBLE
-from puffcoble.puffco.constants import ModeCommands
+from puffcoble.puffco.constants import ModeCommands, AnimationCode
 import asyncio
 import cbor2
 import re, ast
@@ -12,7 +12,7 @@ async def main():
     "lamp":{
         "name":"pikaled2",
         "param":{
-            "anim":1,
+            "anim":AnimationCode.CIRCLING,
             "color":[
                 "#ffffff",
                 "#ffffff",
@@ -91,9 +91,9 @@ async def main():
     }
 }
 
-    profileIndex = int(await device.get_current_profile_index())
+    profileIndex = int(await device.get_current_profile())
 
-    await device.write_cbor_full(f"/u/app/hc/{profileIndex}/colr", payload)
+    await device.set_profile_colour(colour=payload)
     print(f'Wrote colour to profile {profileIndex}')
 
 

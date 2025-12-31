@@ -8,10 +8,11 @@ async def main():
     device = PuffcoBLE(device_name='DEV PUFFCO', debug=True)
     await device.connect()
     
-    payload = {'lamp': {'name': 'solid', 'param': {'color': ["#b700ff"]}}}
+    payload = {'lamp': {'name': 'solid', 'param': {'color': ["#ff0000"]}}}
     
-    profileIndex = int(await device.get_current_profile_index())
-    await device.write_cbor_full(f"/u/app/hc/{profileIndex}/colr", payload)
+    profileIndex = int(await device.get_current_profile())
+
+    await device.set_profile_colour(colour=payload)
     print(f'Wrote colour to profile {profileIndex}')
 
 
