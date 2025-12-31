@@ -6,4 +6,4 @@ from .puffco.constants import LoraxService, PikachuService, PupService, SilabsOt
 from .utils.utils import PuffcoUtils
 from .puffcoble import PuffcoBLE
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
